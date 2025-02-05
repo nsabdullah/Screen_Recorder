@@ -1,45 +1,145 @@
-<!DOCTYPE html>
+।<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Screen Recorder</title>
+    <style>
+        /* Resetting default margin and padding */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1d2b64, #f8cdda); /* Gradient background */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+        }
+
+        .container {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        button:disabled {
+            background-color: #ddd;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:active {
+            background-color: #004080;
+        }
+
+        video {
+            margin-top: 20px;
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px;
+                width: 90%;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Screen Recording Example</h1>
-    <button id="startBtn">Start Recording</button>
-    <button id="stopBtn" disabled>Stop Recording</button>
-    <video id="video" controls></video>
+
+    <div class="container">
+        <h1>Screen Recording</h1>
+        <button id="startBtn">Start Recording</button>
+        <button id="stopBtn" disabled>Stop Recording</button>
+        <video id="video" controls></video>
+    </div>
 
     <script>
         let mediaRecorder;
         let recordedChunks = [];
 
-        // স্ক্রীন রেকর্ডিং শুরু
+        // Screen recording start
         document.getElementById('startBtn').addEventListener('click', async () => {
             try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-                mediaRecorder = new MediaRecorder(stream);
+                // Get screen media with high resolution and frame rate
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: {
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
+                        frameRate: { ideal: 30 }
+                    }
+                });
+
+                // Initialize MediaRecorder
+                mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm; codecs=vp9',
+                    videoBitsPerSecond: 2500000
+                });
+
+                // Push data when available
                 mediaRecorder.ondataavailable = event => recordedChunks.push(event.data);
+
+                // When recording stops, create video and display
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
                     const videoURL = URL.createObjectURL(blob);
                     document.getElementById('video').src = videoURL;
                 };
+
+                // Start recording
                 mediaRecorder.start();
                 document.getElementById('startBtn').disabled = true;
                 document.getElementById('stopBtn').disabled = false;
+
             } catch (err) {
                 console.error("Error: " + err);
             }
         });
 
-        // স্ক্রীন রেকর্ডিং থামানো
+        // Screen recording stop
         document.getElementById('stopBtn').addEventListener('click', () => {
             mediaRecorder.stop();
             document.getElementById('startBtn').disabled = false;
             document.getElementById('stopBtn').disabled = true;
         });
     </script>
+
 </body>
 </html>
