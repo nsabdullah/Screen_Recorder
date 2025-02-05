@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Recorder</title>
+</head>
+<body>
+    <h1>Screen Recording Example</h1>
+    <button id="startBtn">Start Recording</button>
+    <button id="stopBtn" disabled>Stop Recording</button>
+    <video id="video" controls></video>
+
+    <script>
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        // স্ক্রীন রেকর্ডিং শুরু
+        document.getElementById('startBtn').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => recordedChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const videoURL = URL.createObjectURL(blob);
+                    document.getElementById('video').src = videoURL;
+                };
+                mediaRecorder.start();
+                document.getElementById('startBtn').disabled = true;
+                document.getElementById('stopBtn').disabled = false;
+            } catch (err) {
+                console.error("Error: " + err);
+            }
+        });
+
+        // স্ক্রীন রেকর্ডিং থামানো
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            mediaRecorder.stop();
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('stopBtn').disabled = true;
+        });
+    </script>
+</body>
+</html>
